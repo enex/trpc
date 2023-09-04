@@ -74,171 +74,172 @@ export function createRootHooks<
       // This makes it so we don't have an unnecessary re-render when opting out of SSR.
       setSSRState((state) => (state ? 'mounted' : false));
     }, []);
+    const value = useMemo(() => ({
+      abortOnUnmount,
+      queryClient,
+      client,
+      ssrContext: ssrContext ?? null,
+      ssrState,
+      fetchQuery: useCallback(
+        (pathAndInput, opts) => {
+          return queryClient.fetchQuery({
+            ...opts,
+            queryKey: getArrayQueryKey(pathAndInput, 'query'),
+            queryFn: () =>
+              (client as any).query(...getClientArgs(pathAndInput, opts)),
+          });
+        },
+        [client, queryClient],
+      ),
+      fetchInfiniteQuery: useCallback(
+        (pathAndInput, opts) => {
+          return queryClient.fetchInfiniteQuery({
+            ...opts,
+            queryKey: getArrayQueryKey(pathAndInput, 'infinite'),
+            queryFn: ({ pageParam }) => {
+              const [path, input] = pathAndInput;
+              const actualInput = { ...input, cursor: pageParam };
+              return (client as any).query(
+                ...getClientArgs([path, actualInput], opts),
+              );
+            },
+          });
+        },
+        [client, queryClient],
+      ),
+      prefetchQuery: useCallback(
+        (pathAndInput, opts) => {
+          return queryClient.prefetchQuery({
+            ...opts,
+            queryKey: getArrayQueryKey(pathAndInput, 'query'),
+            queryFn: () =>
+              (client as any).query(...getClientArgs(pathAndInput, opts)),
+          });
+        },
+        [client, queryClient],
+      ),
+      prefetchInfiniteQuery: useCallback(
+        (pathAndInput, opts) => {
+          return queryClient.prefetchInfiniteQuery({
+            ...opts,
+            queryKey: getArrayQueryKey(pathAndInput, 'infinite'),
+            queryFn: ({ pageParam }) => {
+              const [path, input] = pathAndInput;
+              const actualInput = { ...input, cursor: pageParam };
+              return (client as any).query(
+                ...getClientArgs([path, actualInput], opts),
+              );
+            },
+          });
+        },
+        [client, queryClient],
+      ),
+      ensureQueryData: useCallback(
+        (pathAndInput, opts) => {
+          return queryClient.ensureQueryData({
+            ...opts,
+            queryKey: getArrayQueryKey(pathAndInput, 'query'),
+            queryFn: () =>
+              (client as any).query(...getClientArgs(pathAndInput, opts)),
+          });
+        },
+        [client, queryClient],
+      ),
+      invalidateQueries: useCallback(
+        (queryKey, filters, options) => {
+          return queryClient.invalidateQueries(
+            {
+              ...filters,
+              queryKey: getArrayQueryKey(queryKey as any, 'any'),
+            },
+            options,
+          );
+        },
+        [queryClient],
+      ),
+      resetQueries: useCallback(
+        (...args: any[]) => {
+          const [queryKey, filters, options] = args;
+
+          return queryClient.resetQueries(
+            {
+              ...filters,
+              queryKey: getArrayQueryKey(queryKey, 'any'),
+            },
+            options,
+          );
+        },
+        [queryClient],
+      ),
+      refetchQueries: useCallback(
+        (...args: any[]) => {
+          const [queryKey, filters, options] = args;
+
+          return queryClient.refetchQueries(
+            {
+              ...filters,
+              queryKey: getArrayQueryKey(queryKey, 'any'),
+            },
+            options,
+          );
+        },
+        [queryClient],
+      ),
+      cancelQuery: useCallback(
+        (pathAndInput) => {
+          return queryClient.cancelQueries({
+            queryKey: getArrayQueryKey(pathAndInput, 'any'),
+          });
+        },
+        [queryClient],
+      ),
+      setQueryData: useCallback(
+        (...args) => {
+          const [queryKey, ...rest] = args;
+          return queryClient.setQueryData(
+            getArrayQueryKey(queryKey, 'query'),
+            ...rest,
+          );
+        },
+        [queryClient],
+      ),
+      getQueryData: useCallback(
+        (...args) => {
+          const [queryKey, ...rest] = args;
+
+          return queryClient.getQueryData(
+            getArrayQueryKey(queryKey, 'query'),
+            ...rest,
+          );
+        },
+        [queryClient],
+      ),
+      setInfiniteQueryData: useCallback(
+        (...args) => {
+          const [queryKey, ...rest] = args;
+
+          return queryClient.setQueryData(
+            getArrayQueryKey(queryKey, 'infinite'),
+            ...rest,
+          );
+        },
+        [queryClient],
+      ),
+      getInfiniteQueryData: useCallback(
+        (...args) => {
+          const [queryKey, ...rest] = args;
+
+          return queryClient.getQueryData(
+            getArrayQueryKey(queryKey, 'infinite'),
+            ...rest,
+          );
+        },
+        [queryClient],
+      ),
+    }), [abortOnUnmount, client, queryClient, ssrContext]);
     return (
       <Context.Provider
-        value={{
-          abortOnUnmount,
-          queryClient,
-          client,
-          ssrContext: ssrContext ?? null,
-          ssrState,
-          fetchQuery: useCallback(
-            (pathAndInput, opts) => {
-              return queryClient.fetchQuery({
-                ...opts,
-                queryKey: getArrayQueryKey(pathAndInput, 'query'),
-                queryFn: () =>
-                  (client as any).query(...getClientArgs(pathAndInput, opts)),
-              });
-            },
-            [client, queryClient],
-          ),
-          fetchInfiniteQuery: useCallback(
-            (pathAndInput, opts) => {
-              return queryClient.fetchInfiniteQuery({
-                ...opts,
-                queryKey: getArrayQueryKey(pathAndInput, 'infinite'),
-                queryFn: ({ pageParam }) => {
-                  const [path, input] = pathAndInput;
-                  const actualInput = { ...input, cursor: pageParam };
-                  return (client as any).query(
-                    ...getClientArgs([path, actualInput], opts),
-                  );
-                },
-              });
-            },
-            [client, queryClient],
-          ),
-          prefetchQuery: useCallback(
-            (pathAndInput, opts) => {
-              return queryClient.prefetchQuery({
-                ...opts,
-                queryKey: getArrayQueryKey(pathAndInput, 'query'),
-                queryFn: () =>
-                  (client as any).query(...getClientArgs(pathAndInput, opts)),
-              });
-            },
-            [client, queryClient],
-          ),
-          prefetchInfiniteQuery: useCallback(
-            (pathAndInput, opts) => {
-              return queryClient.prefetchInfiniteQuery({
-                ...opts,
-                queryKey: getArrayQueryKey(pathAndInput, 'infinite'),
-                queryFn: ({ pageParam }) => {
-                  const [path, input] = pathAndInput;
-                  const actualInput = { ...input, cursor: pageParam };
-                  return (client as any).query(
-                    ...getClientArgs([path, actualInput], opts),
-                  );
-                },
-              });
-            },
-            [client, queryClient],
-          ),
-          ensureQueryData: useCallback(
-            (pathAndInput, opts) => {
-              return queryClient.ensureQueryData({
-                ...opts,
-                queryKey: getArrayQueryKey(pathAndInput, 'query'),
-                queryFn: () =>
-                  (client as any).query(...getClientArgs(pathAndInput, opts)),
-              });
-            },
-            [client, queryClient],
-          ),
-          invalidateQueries: useCallback(
-            (queryKey, filters, options) => {
-              return queryClient.invalidateQueries(
-                {
-                  ...filters,
-                  queryKey: getArrayQueryKey(queryKey as any, 'any'),
-                },
-                options,
-              );
-            },
-            [queryClient],
-          ),
-          resetQueries: useCallback(
-            (...args: any[]) => {
-              const [queryKey, filters, options] = args;
-
-              return queryClient.resetQueries(
-                {
-                  ...filters,
-                  queryKey: getArrayQueryKey(queryKey, 'any'),
-                },
-                options,
-              );
-            },
-            [queryClient],
-          ),
-          refetchQueries: useCallback(
-            (...args: any[]) => {
-              const [queryKey, filters, options] = args;
-
-              return queryClient.refetchQueries(
-                {
-                  ...filters,
-                  queryKey: getArrayQueryKey(queryKey, 'any'),
-                },
-                options,
-              );
-            },
-            [queryClient],
-          ),
-          cancelQuery: useCallback(
-            (pathAndInput) => {
-              return queryClient.cancelQueries({
-                queryKey: getArrayQueryKey(pathAndInput, 'any'),
-              });
-            },
-            [queryClient],
-          ),
-          setQueryData: useCallback(
-            (...args) => {
-              const [queryKey, ...rest] = args;
-              return queryClient.setQueryData(
-                getArrayQueryKey(queryKey, 'query'),
-                ...rest,
-              );
-            },
-            [queryClient],
-          ),
-          getQueryData: useCallback(
-            (...args) => {
-              const [queryKey, ...rest] = args;
-
-              return queryClient.getQueryData(
-                getArrayQueryKey(queryKey, 'query'),
-                ...rest,
-              );
-            },
-            [queryClient],
-          ),
-          setInfiniteQueryData: useCallback(
-            (...args) => {
-              const [queryKey, ...rest] = args;
-
-              return queryClient.setQueryData(
-                getArrayQueryKey(queryKey, 'infinite'),
-                ...rest,
-              );
-            },
-            [queryClient],
-          ),
-          getInfiniteQueryData: useCallback(
-            (...args) => {
-              const [queryKey, ...rest] = args;
-
-              return queryClient.getQueryData(
-                getArrayQueryKey(queryKey, 'infinite'),
-                ...rest,
-              );
-            },
-            [queryClient],
-          ),
-        }}
+        value={}
       >
         {props.children}
       </Context.Provider>
